@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en" data-bs-theme="auto">
+
+<head>
+  <script src="../assets/js/color-modes.js"></script>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="">
+  <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
+  <meta name="generator" content="Hugo 0.115.4">
+  <title>Vista previa</title>
+
+  <link rel="canonical" href="https://getbootstrap.com/docs/5.3/examples/list-groups/">
+
+
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@docsearch/css@3">
+
+  <link href="/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .bd-placeholder-img {
+      font-size: 1.125rem;
+      text-anchor: middle;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      user-select: none;
+    }
+
+    @media (min-width: 768px) {
+      .bd-placeholder-img-lg {
+        font-size: 3.5rem;
+      }
+    }
+
+    .b-example-divider {
+      width: 100%;
+      height: 3rem;
+      background-color: rgba(0, 0, 0, .1);
+      border: solid rgba(0, 0, 0, .15);
+      border-width: 1px 0;
+      box-shadow: inset 0 .5em 1.5em rgba(0, 0, 0, .1), inset 0 .125em .5em rgba(0, 0, 0, .15);
+    }
+
+    .b-example-vr {
+      flex-shrink: 0;
+      width: 1.5rem;
+      height: 100vh;
+    }
+
+    .bi {
+      vertical-align: -.125em;
+      fill: currentColor;
+    }
+
+    .nav-scroller {
+      position: relative;
+      z-index: 2;
+      height: 2.75rem;
+      overflow-y: hidden;
+    }
+
+    .nav-scroller .nav {
+      display: flex;
+      flex-wrap: nowrap;
+      padding-bottom: 1rem;
+      margin-top: -1px;
+      overflow-x: auto;
+      text-align: center;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .btn-bd-primary {
+      --bd-violet-bg: #712cf9;
+      --bd-violet-rgb: 112.520718, 44.062154, 249.437846;
+
+      --bs-btn-font-weight: 600;
+      --bs-btn-color: var(--bs-white);
+      --bs-btn-bg: var(--bd-violet-bg);
+      --bs-btn-border-color: var(--bd-violet-bg);
+      --bs-btn-hover-color: var(--bs-white);
+      --bs-btn-hover-bg: #6528e0;
+      --bs-btn-hover-border-color: #6528e0;
+      --bs-btn-focus-shadow-rgb: var(--bd-violet-rgb);
+      --bs-btn-active-color: var(--bs-btn-hover-color);
+      --bs-btn-active-bg: #5a23c8;
+      --bs-btn-active-border-color: #5a23c8;
+    }
+
+    .bd-mode-toggle {
+      z-index: 1500;
+    }
+  </style>
+
+
+  <!-- Custom styles for this template -->
+  <link href="/css/list-groups.css" rel="stylesheet">
+</head>
+
+<body>
+  <div class="d-flex flex-column flex-md-row p-4 gap-4 py-md-5 align-items-center justify-content-center">
+
+    <div class="list-group" id="lista">
+
+    </div>
+  </div>
+
+  <div class="d-flex flex-column flex-md-row p-4 gap-4 py-md-5 self-end fixed-bottom ">
+    <button class="w-100 btn btn-primary btn-lg" onclick="enviarDatos()">Guardar</button>
+  </div>
+
+  <div class="modal fade" role="dialog" tabindex="-1" id="modal-1">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">Error al conectar con el servidor</h4><button class="btn-close" type="button"
+            aria-label="Close" data-bs-dismiss="modal" onclick="cerrarModal()"></button>
+        </div>
+        <div class="modal-body">
+          <p>Parece que ha perdido la conexion.</p>
+        </div>
+        <div class="modal-footer"><button class="btn btn-light" onclick="cerrarModal()" type="button"
+            data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</body>
+
+<script>
+
+
+  const dbName = "db";
+
+
+  const version = parseInt(localStorage.getItem("version")) + 1;
+  const versionNueva = localStorage.setItem("version", version);
+  localStorage.setItem("version", version)
+  const request = indexedDB.open(dbName, versionNueva);
+
+
+  request.onsuccess = (event) => {
+    const db = event.target.result;
+
+    const transaction = db.transaction(["formularios"], "readonly");
+
+    const objectStore = transaction.objectStore("formularios");
+
+    const resultado = objectStore.getAll();
+
+
+    const lista = document.getElementById('lista');
+
+    resultado.onsuccess = (event) => {
+      const data = event.target.result;
+      data.forEach((item, index) => {
+        lista.innerHTML += `     <div id='carta${index}' ondblclick="editar({nombres: '${item.nombres}',apellidos: '${item.apellido}',sector: '${item.sector}',nivel: '${item.nivel}' })" class="list-group-item d-flex gap-3 py-3 " aria-current="true" >
+            <button class="btn-close" type="button" aria-label="Close"
+                        data-bs-dismiss="modal" onclick='borrarTarjeta(${index}, ${item.fecha})'></button>
+            <div class="d-flex gap-2 w-100 justify-content-between">
+             
+              <div>
+                <h6 class="mb-0">Nombres:${item.nombres}</h6>
+                <h6 class="mb-0">Apellidos:${item.apellidos}</h6>
+                <h6 class="mb-0">Sector:${item.sector}</h6>
+                <h6 class="mb-0">Nivel:${item.nivel}</h6>
+                <br>
+              </div>
+              <small class="opacity-50 text-nowrap">${item.fecha}</small>
+            </div>
+          </div>`
+      });
+    }
+
+
+    transaction.oncomplete = (event) => {
+      db.close();
+    };
+  };
+
+
+  const socket = new WebSocket("wss://localhost:7001/sync");
+
+
+  socket.addEventListener("open", (event) => {
+    console.log(event.data)
+  })
+
+  socket.addEventListener("message", (event) => {
+
+  })
+
+
+  socket.addEventListener("close", (event) => {
+    socket.OPEN;
+  })
+
+  socket.addEventListener("error", (event) => {
+    console.log(event.data)
+  })
+
+
+
+  function borrarTarjeta(id, fecha) {
+
+    // La parte de remove quita el elemento completo 
+    console.log("carta" + id)
+    //document.getElementById("carta" + id).remove();
+
+
+    /*
+    * Codigo para borrar de la base de datos local
+    */
+
+    const request = indexedDB.open(dbName, versionNueva);
+
+    request.onsuccess = (event) => {
+      const db = event.target.result;
+
+      const transaction = db.transaction(["formularios"], "readwrite");
+
+      const objectStore = transaction.objectStore("formularios");
+
+      const resultado = objectStore.delete(fecha);
+
+
+      resultado.onsuccess = (event) => {
+        console.log("Se ha borrado existosamente")
+        document.getElementById("carta" + id).remove();
+      }
+
+    };
+
+
+  }
+
+  function enviarDatos() {
+
+
+    const peticion = indexedDB.open(dbName, versionNueva);
+    peticion.onsuccess = (event) => {
+      const db = event.target.result;
+
+      const transaction = db.transaction(["formularios"], "readwrite");
+
+      const objectStore = transaction.objectStore("formularios");
+
+      const resultado = objectStore.getAll();
+
+      // Esta medio funcionando 
+      resultado.onsuccess = (event) => {
+        const data = event.target.result;
+        let lista = []
+        data.forEach((item) => {
+          lista.push(
+            {
+              idUsuario: item.usuario,
+              telefono: "",
+              longitud: item.longitud,
+              latitud: item.latitud,
+              fecha: item.fecha,
+              apellido: item.apellidos,
+              idForm: "",
+              foto: null,
+              nivelAcademico: item.nivel,
+              nombre: item.nombres
+            }
+          )
+        })
+
+        socket.send(
+          JSON.stringify(
+            {
+              "tipo": "new_form",
+              "mensaje": lista
+            }
+          )
+        )
+
+
+      /*  socket.onclose = (event) => {
+          console.log(event.reason)
+        }
+        */
+        //socket.bin
+        objectStore.clear()
+
+        window.location.href = "/form";
+      }
+    }
+  }
+
+  function editar({ nombres, apellidos, sector, nivel }) {
+    fetch('/edit', {
+      method: 'POST',
+      body: JSON.stringify({
+        nombres: nombres,
+        apellidos: apellidos,
+        sector: sector,
+        nivel: nivel
+      }),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }).then(res => res.json())
+      .then(response => {
+        console.log('Success:', JSON.stringify(response))
+        window.location.href = "/form";
+      })
+      .catch(error => console.error('Error:', error));
+  }
+  /*
+               Creo que en esta parte seria bueno utilizar WebSockets para que se actualice la lista en tiempo real
+               Ademas de que se podria utilizar para enviar los datos al servidor
+              */
+
+
+  window.addEventListener("offline", function () {
+    document.getElementById("modal-1").style.display = "block"
+    document.getElementById('modal-1').classList.add('show')
+  })
+
+
+  function cerrarModal() {
+    document.getElementById("modal-1").style.display = "none"
+    document.getElementById('modal-1').classList.remove("show")
+  }
+</script>
+
+</html>

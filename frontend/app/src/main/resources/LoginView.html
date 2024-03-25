@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html data-bs-theme="light" lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <link rel="manifest" href="/manifest.json">
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Login - Brand</title>
+    <link rel="stylesheet" href="/bootstrap.min.css">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i&amp;display=swap">
+    <link rel="stylesheet" href="/fonts/fontawesome-all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+</head>
+
+<body class="bg-gradient-primary">
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-9 col-lg-12 col-xl-10">
+                <div class="card shadow-lg o-hidden border-0 my-5">
+                    <div class="card-body p-0">
+                        <div class="row">
+                            <div class="col-lg-6 d-none d-lg-flex">
+                                <div class="flex-grow-1 bg-login-image"
+                                    style="background-image: url(&quot;/img/image3.jpg&quot;);"></div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="p-5">
+                                    <div class="text-center">
+                                        <h4 class="text-dark mb-4">Bienvenido</h4>
+                                    </div>
+
+                                    <div class="mb-3"><input id="username_input" class="form-control form-control-user"
+                                            type="email" aria-describedby="emailHelp"
+                                            placeholder="Introduce correo electronico..." name="email"></div>
+                                    <div class="mb-3"><input id="password_input" class="form-control form-control-user"
+                                            type="password" placeholder="Contraseña" name="password"></div>
+                                    <div class="mb-3">
+                                        <div class="custom-control custom-checkbox small">
+                                            <div class="form-check"><input class="form-check-input custom-control-input"
+                                                    type="checkbox" id="formCheck-1"><label
+                                                    class="form-check-label custom-control-label"
+                                                    for="formCheck-1">Mantener sesion</label></div>
+                                        </div>
+                                    </div><button class="btn btn-primary d-block btn-user w-100"
+                                        onclick="autenticar()">Iniciar sesion</button>
+
+
+                                    <div class="text-center"><a class="small" href="forgot-password.html">Olvido
+                                            su contraseña?</a></div>
+                                    <div class="text-center"><a class="small" href="register.html">Solicita una cuenta
+                                        </a></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" role="dialog" tabindex="-1" id="modal-1">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Error al conectar con el servidor</h4><button class="btn-close"
+                        type="button" aria-label="Close" data-bs-dismiss="modal" onclick="cerrarModal()"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Parece que ha perdido la conexion.</p>
+                </div>
+                <div class="modal-footer"><button class="btn btn-light" onclick="cerrarModal()" type="button"
+                        data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/bootstrap.min.js"></script>
+    <script src="/js/bs-init.js"></script>
+    <script src="/js/theme.js"></script>
+    <script>
+
+
+        async function peticion() {
+            const request = await fetch("https://localhost:7001/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    username: document.getElementById("username_input").value,
+                    password: document.getElementById("password_input").value
+                })
+            })
+
+            const response = await request.json();
+            var decoded = jwt_decode(response.token);
+            if (decoded.rol != null) {
+                sessionStorage.setItem("token", response.token)
+                const peticion = fetch("/token", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        token: response.token
+                    })
+                })
+                await peticion;
+                console.log(decoded.rol)
+                if (decoded.rol == 0) {
+                   window.location.href = "/admin/dashboard"
+                } else {
+                    window.location.href = "/form"
+                }
+            }
+
+        }
+
+
+        async function autenticar() {
+            if (navigator.onLine) {
+                peticion();
+            } else {
+                console.log("Esta entrando en else")
+                saveOnIndexedDb();
+            }
+
+        }
+
+
+        function saveOnIndexedDb() {
+            const dbName = "db";
+            const version = parseInt(localStorage.getItem("version")) + 1;
+            const versionNueva = localStorage.setItem("version", version);
+            localStorage.setItem("version", version)
+            // Hay que cambiar este codigo
+            const request = indexedDB.open(dbName, versionNueva);
+
+
+            request.onerror = (event) => {
+                console.log(event)
+            };
+
+            request.onsuccess = (event) => {
+                console.log(event)
+                const db = event.target.result;
+
+                const transaction = db.transaction(["credenciales"], "readwrite");
+
+                const objectStore = transaction.objectStore("credenciales");
+
+                const resultado = objectStore.add({ fecha: new Date().getTime(), email: document.getElementById("username_input").value, password: document.getElementById("password_input").value })
+
+                resultado.onsuccess = (event) => {
+                    const data = event.target.result;
+                    console.log("Credenciales insertadas");
+                    localStorage.setItem("email", document.getElementById("username_input").value);
+                    localStorage.setItem("password", document.getElementById("password_input").value);
+                }
+
+
+                /*objectStore.transaction.onsuccess = (event) => {
+                    const credenciales = db
+                        .transaction("credenciales", "readwrite")
+                        .objectStore("credenciales");
+                    credenciales.add();*/
+            };
+
+
+
+            request.oncomplete = (e) => {
+                e.target.result.close();
+            }
+            //  db.close()
+        };
+
+
+
+
+
+        // Es necesario agregar web workers.
+        window.addEventListener("online", () => {
+            // Hay que recordar el usuario cuando este offline
+            console.log("El usuario esta online, se insertaran automaticamente las credenciales")
+            peticion();
+        })
+
+
+        window.addEventListener("load", () => {
+            if (!navigator.onLine) {
+                document.getElementById("username_input").value = localStorage.getItem("email")
+                document.getElementById("password_input").value = localStorage.getItem("password")
+            }
+        })
+
+
+
+        window.addEventListener("offline", function () {
+            document.getElementById("modal-1").style.display = "block"
+            document.getElementById('modal-1').classList.add('show')
+        })
+
+
+        function cerrarModal() {
+            document.getElementById("modal-1").style.display = "none"
+            document.getElementById('modal-1').classList.remove("show")
+        }
+    </script>
+</body>
+
+</html>

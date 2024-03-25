@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html data-bs-theme="light" lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <link rel="manifest" href="/manifest.json">
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Login - Brand</title>
+    <link rel="stylesheet" href="/bootstrap.min.css">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i&amp;display=swap">
+    <link rel="stylesheet" href="/fonts/fontawesome-all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsonwebtoken@9.0.1/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+
+</head>
+
+<body class="bg-gradient-primary">
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-9 col-lg-12 col-xl-10">
+                <div class="card shadow-lg o-hidden border-0 my-5">
+                    <div class="card-body p-0">
+                        <div class="row">
+                            <div class="col-lg-6 d-none d-lg-flex">
+                                <div class="flex-grow-1 bg-login-image"
+                                    style="background-image: url(&quot;/img/image3.jpg&quot;);"></div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="p-5">
+                                    <div class="text-center">
+                                        <h4 class="text-dark mb-4">Bienvenido</h4>
+                                    </div>
+
+                                    <div class="mb-3"><input id="username_input" class="form-control form-control-user"
+                                            type="email" aria-describedby="emailHelp"
+                                            placeholder="Enter Email Address..." name="email"></div>
+                                    <div class="mb-3"><input id="password_input" class="form-control form-control-user"
+                                            type="password" placeholder="Password" name="password"></div>
+                                    <div class="mb-3">
+                                        <div class="custom-control custom-checkbox small">
+                                            <div class="form-check"><input class="form-check-input custom-control-input"
+                                                    type="checkbox" id="formCheck-1"><label
+                                                    class="form-check-label custom-control-label"
+                                                    for="formCheck-1">Mantener sesion</label></div>
+                                        </div>
+                                    </div><button class="btn btn-primary d-block btn-user w-100"
+                                        onclick="autenticar()">Login</button>
+
+
+                                    <div class="text-center"><a class="small" href="forgot-password.html">Olvido
+                                            su contraseña?</a></div>
+                                    <div class="text-center"><a class="small" href="register.html">Solicita una cuenta
+                                        </a></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/bootstrap.min.js"></script>
+    <script src="/js/bs-init.js"></script>
+    <script src="/js/theme.js"></script>
+    <script>
+        async function autenticar() {
+            const request = await fetch("http://localhost:7001/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    username: document.getElementById("username_input").value,
+                    password: document.getElementById("password_input").value
+                })
+            })
+
+            const response = await request.json();
+            var decoded = jwt_decode(response.token);
+            console.log(decoded)
+            if (decoded.rol == 0) {
+                sessionStorage.setItem("token", response.token)
+                fetch("/token", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        token: response.token
+                    })
+                })
+                window.location.href = "/admin/dashboard"
+            } else {
+                window.location.href = "/form"
+            }
+
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html data-bs-theme="light" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Prueba</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/Articles-Cards-images.css">
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+
+</head>
+
+<body>
+
+
+    <script>
+
+        const geoOpciones = {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: 5000
+        };
+        function exito(pos) {
+            const geo = pos.coords
+
+            localStorage.setItem("latitud", geo.latitude)
+            localStorage.setItem("longitud", geo.longitude)
+            console.log(geo.latitude)
+            console.log(geo.longitude)
+
+            return geo;
+        }
+
+        function error() {
+            console.log("Ha habido un error")
+        }
+
+        function obtenerLocalizacion() {
+            navigator.geolocation.getCurrentPosition(exito, error, geoOpciones);
+        }
+
+        obtenerLocalizacion()
+        var decoded = jwt_decode(sessionStorage.getItem("token"));
+
+        console.log(decoded)
+        if (decoded.rol != 1 && decoded.rol != 0) {
+            window.location.href = "/login";
+        }
+
+    </script>
+    <div class="container py-4 py-xl-5">
+        <div class="row mb-5">
+            <div class="col-md-8 col-xl-6 text-center mx-auto">
+                <h2>Utilizacion de grpc</h2>
+                <p class="w-lg-50">En esta seccion se esta utilizando grpc para la implementacion de grpc</p>
+            </div>
+        </div>
+        <div class="row gy-4 row-cols-1 row-cols-md-2 row-cols-xl-3">
+            <div class="col">
+                <div class="card"><img class="card-img-top w-100 d-block fit-cover" style="height: 200px;"
+                        src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png">
+                    <div class="card-body p-4">
+                        <p class="text-primary card-text mb-0">GRPC</p>
+                        <h4 class="card-title">Formulario por nombre</h4>
+                        <p class="card-text">Búsqueda de los formularios por el nombre del encuestado</p>
+                        <div class="d-flex">
+                            <div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card"><img class="card-img-top w-100 d-block fit-cover" style="height: 200px;"
+                        src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png">
+                    <div class="card-body p-4">
+                        <p class="text-primary card-text mb-0">GRPC</p>
+                        <h4 class="card-title">Crear formulario</h4>
+                        <p class="card-text">Creación de formulario haciendo uso de la tecnologia GRPC&nbsp;</p>
+                        <button class="btn btn-primary btn-sm d-none d-sm-inline-block" role="button" href="#"
+                            onclick="abrirModal()"><i class="fas fa-download fa-sm text-white-50"></i>&nbsp;Crear
+                            usuario</button>
+                        <div class="d-flex">
+                            <div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card"><img class="card-img-top w-100 d-block fit-cover" style="height: 200px;"
+                        src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png">
+                    <div class="card-body p-4">
+                        <p class="text-primary card-text mb-0">GRPC</p>
+                        <h4 class="card-title">Buscar formulario por id</h4>
+                        <p class="card-text">Podras encontrar un formulario por el id de quien lo tomo</p>
+                        <div class="d-flex">
+                            <div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row" style="margin-top: 12px;">
+            <div class="col-md-6 text-nowrap">
+
+            </div>
+            <div class="col-md-6">
+                <div class="text-md-end dataTables_filter" id="dataTable_filter"><label class="form-label"><input
+                            type="search" class="form-control form-control-sm" aria-controls="dataTable"
+                            placeholder="Buscar" id="busqui"
+                            onchange="busquedadeUsuario(document.getElementById('busqui').value)"></label></div>
+            </div>
+        </div>
+        <table class="table my-0" id="dataTable">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>Nivel Academico</th>
+                </tr>
+            </thead>
+            <tbody id="formularios">
+            </tbody>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td><strong>Nombre</strong></td>
+                    <td><strong>Apellido</strong></td>
+                    <td><strong>Nivel Academico</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    <script src="/bootstrap.min.js"></script>
+    <script>
+        async function getForms() {
+            const peticion = await fetch("/form/users", {
+                headers: {
+                    "Access-Control-Allow-Origin": "*",
+                },
+                method: 'GET'
+            })
+            const formularios = await peticion.json()
+
+
+
+            console.log(formularios)
+
+            document.getElementById("formularios").innerHTML = formularios.map((form, index) => {
+                return (`<tr id="usuario${index}">
+          <td>${form.nombre}</td>
+          <td>${form.apellido}</td>
+          <td>${form.nivelAcademico}</td>
+ </tr>`);
+            });
+
+
+            // Hay que utilizar esta api para obtener la direccion exacta en vez de longitud y latitud
+            // https://maps.googleapis.com/maps/api/geocode/json?latlng=19.4900957,-70.7417021&key=AIzaSyARGxyXTVxGZkS7QzQ3Cg3DnPmIyNfTjzc"
+
+        }
+
+        getForms()
+
+        function abrirModal() {
+            //console.log("Hello world")
+            document.getElementById("modal-2").style.display = "block"
+            document.getElementById('modal-2').classList.add('show')
+        }
+
+
+        function cerrarModal() {
+            //console.log("Hello world")
+            document.getElementById("modal-2").style.display = "none"
+            document.getElementById('modal-2').classList.remove("show")
+            document.getElementById("nombre").value = ""
+            document.getElementById("apellido").value = ""
+            document.getElementById("cedula").value = ""
+            document.getElementById("contrasena").value = ""
+            document.getElementById("direccion").value = ""
+            document.getElementById("email").value = ""
+        }
+
+        async function busquedadeUsuario(id) {
+            const peticion = await fetch(`/form=${id}`, {
+                headers: {
+                    "Access-Control-Allow-Origin": "*",
+                },
+                method: 'GET'
+            })
+            const formularios = await peticion.json()
+
+
+
+            console.log(formularios)
+
+            document.getElementById("formularios").innerHTML = formularios.map((form, index) => {
+                return (`<tr id="usuario${index}">
+          <td>${form.nombre}</td>
+          <td>${form.apellido}</td>
+          <td>${form.nivelAcademico}</td></tr>`);
+            });
+        }
+
+
+        async function insertarFormulario(formulario) {
+            const peticion = await fetch("/form/new", {
+                headers: {
+                    "Access-Control-Allow-Origin": "*",
+                },
+                method: 'POST',
+                body: JSON.stringify({
+                    idUsuario: formulario.usuario,
+                    telefono: "",
+                    longitud: formulario.longitud,
+                    latitud: formulario.latitud,
+                    fecha: formulario.fecha,
+                    apellido: formulario.apellidos,
+                    idForm: "",
+                    foto: "",
+                    nivelAcademico: formulario.nivel,
+                    nombre: formulario.nombres
+                })
+            })
+            const formularios = await peticion.status
+
+            if(formulario == 200) {
+                console.log("Exito")
+            }
+
+          /*  if (formularios != null) {
+                console.log(formularios)
+
+                document.getElementById("formularios").innerHTML = formularios.map((form, index) => {
+                    return (`<tr id="usuario${index}"><td>${form.nombre}</td><td>${form.apellido}</td><td>${form.nivelAcademico}</td> </tr>`);
+                });
+            }
+ */
+        }
+
+    </script>
+
+
+    <div id="modal-2" class="modal fade " role="dialog" tabindex="-1" style="display: none;">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="titulo">Creacion de usuario</h4><button class="btn-close" type="button"
+                        aria-label="Close" data-bs-dismiss="modal" on onclick="cerrarModal()"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="">
+                        <h4 class="mb-3">Formulario de censo</h4>
+
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <label for="firstName" class="form-label">Nombres</label>
+                                <input type="text" class="form-control" id="nombres" placeholder=""
+                                    th:value="${nombres}" required>
+                                <div class="invalid-feedback">
+                                    Por favor inserte un Nombres validos
+                                </div>
+                            </div>
+
+                            <div class="col-sm-6">
+                                <label for="lastName" class="form-label">Apellidos</label>
+                                <input type="text" class="form-control" id="apellidos" placeholder=""
+                                    th:value="${apellidos}" required>
+                                <div class="invalid-feedback">
+                                    Por favor inserte un Apellidos validos
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <label for="username" class="form-label">Sector</label>
+                                <div class="input-group has-validation">
+                                    <input type="text" class="form-control" id="sector" th:value="${sector}"
+                                        placeholder="Sector de residencia" required>
+                                    <div class="invalid-feedback">
+                                        Por favor inserte un Sector valido
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <label for="email" class="form-label">Nivel Escolar <span
+                                        class="text-body-secondary"></span></label>
+                                <select type="email" class="form-control" id="nivel" th:value="${nivel}"
+                                    placeholder="Nivel Medio">
+                                    <option value="Basico" selected>
+                                        Básico
+                                    </option>
+                                    <option value="Medio">
+                                        Medio
+                                    </option>
+                                    <option value="Universidad">
+                                        Grado Universitario,
+                                    </option>
+                                    <option value="Postgrado">
+                                        Postgrado y Doctorado
+                                    </option>
+                                </select>
+                                <div class="invalid-feedback">
+                                    Por favor inserte un Nivel Escolar valido.
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer"><button class="btn btn-light" type="button" data-bs-dismiss="modal"
+                        onclick="cerrarModal()">Cerrar</button><button class="btn btn-primary" type="button"
+                        id="modal-2-button" onclick="insertarFormulario({ nombres: document.getElementById('nombres').value,
+                        apellidos: document.getElementById('apellidos').value,
+                        usuario: decoded.id,
+                        sector: document.getElementById('sector').value,
+                        nivel: document.getElementById('nivel').value,
+                        fecha: Date.now(),
+                        latitud: localStorage.getItem('latitud'),
+                        longitud: localStorage.getItem('longitud'),
+                        foto: localStorage.getItem('picture')
+                        })">Guardar</button></div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

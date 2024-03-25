@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+package data;
+
+message UsuarioInteface{
+  string idUsuario = 1;
+  string nombre = 2;
+  string apellido = 3;
+  string cedula = 4;
+  string contrasena = 5;
+  string direccion = 6;
+  string correo = 7;
+  bool activo = 8;
+  google.protobuf.Timestamp fechaNacimiento = 9;
+  bytes foto = 10;
+  int32 idRole = 11;
+}
+
+message FormInterface{
+  string idUsuario = 1;
+  string idForm = 2;
+  string nombre = 3;
+  string apellido = 4;
+  string telefono = 5;
+  google.protobuf.Timestamp fecha = 6;
+  string nivelAcademico = 7;
+  double latitud = 8;
+  double longitud = 9;
+  bytes foto = 10;
+}
+
+message ListaUsuario{
+  repeated UsuarioInteface usuario = 1;
+}
+
+message ListaForm{
+  repeated FormInterface form = 1;
+}
+
+message UsuarioRequest{
+  string usuarioId = 1;
+}
+
+message UsuarioLogin{
+  string correo = 1;
+  string contrasena = 2;
+}
+
+message FormRequest{
+  string valueStr = 1;
+}
+
+message UsuarioDelete{
+  bool ok = 1;
+}
+
+message FormDelete{
+  bool ok = 1;
+}
+
+//Mensaje vacio.
+message Empty{
+
+}
+
+
+service UsuarioRn{
+  rpc getUsuario(UsuarioRequest) returns (UsuarioInteface);
+  rpc getUsuarioLogin(UsuarioLogin) returns (UsuarioInteface);
+  rpc insertUsuario(UsuarioInteface) returns (UsuarioInteface);
+  rpc updateUsuario(UsuarioInteface) returns (UsuarioInteface);
+  rpc deleteUsuario(UsuarioRequest) returns (UsuarioDelete);
+  rpc listUsuario(Empty) returns (ListaUsuario);
+}
+
+service FormRm{
+  rpc getForm(FormRequest) returns (FormInterface);
+  rpc insertForm(FormInterface) returns (FormInterface);
+  rpc updateForm(FormInterface) returns (FormInterface);
+  rpc deleteForm(FormRequest) returns (FormDelete);
+  rpc listForm(Empty) returns (ListaForm);
+  rpc listFormUsuarioId(FormRequest) returns (ListaForm);
+  rpc listFormNombre(FormRequest) returns (ListaForm);
+
+}
